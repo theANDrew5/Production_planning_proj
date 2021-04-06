@@ -2,8 +2,7 @@
 // Created by User on 10-Feb-20.
 //
 
-#ifndef MODEL_MACHINE_H
-#define MODEL_MACHINE_H
+#pragma once
 
 #include "pch.h"// pch.h: This is a precompiled header file.
 #include "Batch.h"
@@ -30,6 +29,10 @@ public:
     bool check_queue();//проверяет на нулевую очередь
 	void addRecipe(Recipe newRecipe);
 
+    friend void to_json(json& j, const Machine& mch);
+
+    friend std::ostream& operator<<(std::ostream& os, Machine& p);//перегрузка оператора <<
+
 protected:
     std::string _type;//тип обработки
     unsigned int _ID;//имя
@@ -39,9 +42,7 @@ protected:
     std::list <Batch*> _batches;// входная очередь в виде ссылок на партии
     Recipe _last_resipe;//последний рецепт
 
-
-
-    friend std::ostream &operator<<(std::ostream & os, Machine & p);//перегрузка оператора <<
+    virtual json to_json() const = 0;
 };
 
 //наследник для потоковой обработки
@@ -52,9 +53,14 @@ public:
     M_flow(int ID,std::deque<Recipe> recipes, bool state=true, unsigned int time=0, std::list<Batch*> batches={});
     M_flow(const M_flow & p);
 
-    unsigned int push_ev();//метод возвращает время события
-    void execute(std::ostream *log);//метод выполняет событие
+    unsigned int push_ev() override;//метод возвращает время события
+    void execute(std::ostream *log) override;//метод выполняет событие
+
     ~M_flow();
+
+protected:
+    json to_json() const override;
+
 };
 
 
@@ -81,6 +87,9 @@ public:
 	
 	~M_group();
 
+protected:
+    json to_json() const override;
+
 private:
     unsigned int _count;
 };
@@ -100,9 +109,9 @@ public:
 
 	~M_stack();
 
+protected:
+    json to_json() const override;
+
 private:
     unsigned int _count;
 };
-
-
-#endif //MODEL_MACHINE_H

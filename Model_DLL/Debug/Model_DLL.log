@@ -7,4 +7,5 @@ D:\PROJECTS\Production_planning_proj\Model_DLL\Environment.cpp(458,27): warning 
 D:\PROJECTS\Production_planning_proj\Model_DLL\Model.cpp(4,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
   Recipe.cpp
   Создание кода...
+     Создается библиотека D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.lib и объект D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.exp
   Model_DLL.vcxproj -> D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.dll

@@ -100,6 +100,24 @@ M_flow::M_flow(const M_flow &p):Machine(p)
 
 M_flow::~M_flow() = default;
 
+json M_flow::to_json() const
+{
+	std::deque <int> batch_IDs;
+
+	for (auto btc : this->_batches)
+		batch_IDs.push_back(btc->get_ID());
+
+	return json{
+		{"Machine_type", this->_type},
+		{"Machine_ID", this->_ID},
+		{"Machine_state", this->_state},
+		{"Machine_time", this->_time},
+		{"Machine_recipes", this->_recipes},
+		{"Machine_batches", batch_IDs},
+		{"Machine_last_resipe", this->_last_resipe}
+	};
+}
+
 
 //Метод выполняет рассчёт события в очереди
 unsigned int M_flow::push_ev()
@@ -137,6 +155,7 @@ void M_flow::execute(std::ostream *log)//выполнение события
     bt_ptr->execute();
     this->_batches.pop_front();
 }
+
 
 
 
@@ -238,6 +257,25 @@ M_group::~M_group()
 
 }
 
+json M_group::to_json() const
+{
+	std::deque <int> batch_IDs;
+
+	for (auto btc : this->_batches)
+		batch_IDs.push_back(btc->get_ID());
+
+	return json{
+		{"Machine_type", this->_type},
+		{"Machine_ID", this->_ID},
+		{"Machine_state", this->_state},
+		{"Machine_time", this->_time},
+		{"Machine_recipes", this->_recipes},
+		{"Machine_last_resipe", this->_count},
+		{"Machine_batches", batch_IDs},
+		{"Machine_last_resipe", this->_last_resipe}
+	};
+}
+
 
 //========================		M_stack class methods	================================
 
@@ -306,6 +344,30 @@ M_stack::~M_stack()
 
 }
 
+json M_stack::to_json() const
+{
+	std::deque <int> batch_IDs;
+
+	for (auto btc : this->_batches)
+		batch_IDs.push_back(btc->get_ID());
+
+	return json{
+		{"Machine_type", this->_type},
+		{"Machine_ID", this->_ID},
+		{"Machine_state", this->_state},
+		{"Machine_time", this->_time},
+		{"Machine_recipes", this->_recipes},
+		{"Machine_last_resipe", this->_count},
+		{"Machine_batches", batch_IDs},
+		{"Machine_last_resipe", this->_last_resipe}
+	};
+}
+
+
+void to_json(json& j, const Machine& mch)
+{
+	j = mch.to_json();
+}
 
 std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка оператора сдвига для вывода
 {
