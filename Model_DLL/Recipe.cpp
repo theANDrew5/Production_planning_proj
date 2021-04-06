@@ -14,13 +14,12 @@ Recipe::Recipe(json j): Recipe(
 {
 }
 
-
-unsigned int Recipe::get_ID()
+unsigned int Recipe::get_ID() const
 {
     return this->_ID;
 }
 
-unsigned int Recipe::get_time()
+unsigned int Recipe::get_time() const
 {
     return this->_time;
 }
@@ -59,4 +58,18 @@ bool operator==(const Recipe &left, const Recipe &right)
 bool operator!=(Recipe &left, Recipe &right) {
     if(left._ID!=right._ID && left._time!=right._time) return true;
     else return false;
+}
+
+void to_json(json& j, const Recipe& r)
+{
+    j = json{
+        {"Recipe_ID", r.get_ID()},
+        {"Recipe_time",r.get_time()}
+    };
+}
+
+void from_json(const json& j, Recipe& r)
+{
+    j.at("Recipe_ID").get_to(r._ID);
+    j.at("Recipe_time").get_to(r._time);
 }
