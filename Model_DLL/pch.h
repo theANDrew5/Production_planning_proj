@@ -20,6 +20,10 @@
 #include <functional>
 #include <fstream>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#define PCH true
 #define DEBUG false
 
 #endif //PCH_H

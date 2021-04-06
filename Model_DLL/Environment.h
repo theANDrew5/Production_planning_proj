@@ -37,6 +37,7 @@ public:
     //вставить в очередь машины несколько партий
     void replace_queue(std::vector<unsigned int>btc_IDs, unsigned int mch_ID);//замена очереди, не заменяет нулевой элемент
 
+
     #if DEBUG
         void print_env();
     #endif // DEBUG
