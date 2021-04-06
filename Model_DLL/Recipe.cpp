@@ -24,12 +24,18 @@ unsigned int Recipe::get_time() const
     return this->_time;
 }
 
-json Recipe::to_json()
+void to_json(json& j, const Recipe& r)
 {
-    return json{
-        {"Recipe_ID", this->_ID},
-        {"Recipe_time", this->_time}
-        };
+    j = json{
+        {"Recipe_ID", r.get_ID()},
+        {"Recipe_time",r.get_time()}
+    };
+}
+
+void from_json(const json& j, Recipe& r)
+{
+    j.at("Recipe_ID").get_to(r._ID);
+    j.at("Recipe_time").get_to(r._time);
 }
 
 std::istream & operator>> (std::istream & is, Recipe & p)//перегрузка оператора сдвига для потока ввода
@@ -60,16 +66,4 @@ bool operator!=(Recipe &left, Recipe &right) {
     else return false;
 }
 
-void to_json(json& j, const Recipe& r)
-{
-    j = json{
-        {"Recipe_ID", r.get_ID()},
-        {"Recipe_time",r.get_time()}
-    };
-}
 
-void from_json(const json& j, Recipe& r)
-{
-    j.at("Recipe_ID").get_to(r._ID);
-    j.at("Recipe_time").get_to(r._time);
-}
