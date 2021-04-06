@@ -561,6 +561,8 @@ void Environment::replace_queue(std::vector<unsigned int> btc_IDs, unsigned int 
     *this->_messages<<"\tMachine:\t"<<mch_ID<<'\n';
 }
 
+
+#if DEBUG
 //отладочный метод для просмотра среды
 void Environment::print_env()
 {
@@ -588,6 +590,7 @@ void Environment::print_env()
         }
         std::cout << '\n';
 }
+#endif
 
 
 void Environment::do_step_till_machine(unsigned int mch_ID)

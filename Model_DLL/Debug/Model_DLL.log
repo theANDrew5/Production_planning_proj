@@ -1,2 +1,8 @@
-﻿     Создается библиотека D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.lib и объект D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.exp
+﻿  dllmain.cpp
+  Environment.cpp
+D:\PROJECTS\Production_planning_proj\Model_DLL\Environment.cpp(458,27): warning C4018: <: несоответствие типов со знаком и без знака
+  Event.cpp
+  Model.cpp
+D:\PROJECTS\Production_planning_proj\Model_DLL\Model.cpp(4,10): warning C4067: непредвиденные лексемы за директивой препроцессора, требуется newline
+  Создание кода...
   Model_DLL.vcxproj -> D:\PROJECTS\Production_planning_proj\Debug\Model_DLL.dll

@@ -13,9 +13,6 @@
 #endif // !
 
 
-
-class Environment;
-
 class Model
 {
 public:

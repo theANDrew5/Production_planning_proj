@@ -63,14 +63,15 @@ private:
 
     friend std::istream & operator>> (std::istream & is, Environment & p);
     //перегрузка оператора сдвига для чтения файла конфигурации
+    
+    
+    //TODO rebase this methods to JSON
     void read_recipes(std::istream &is, std::deque <Recipe> &container);//читаем последовательность рецептов
     void read_state(std::istream &is);//читаем файл состояния
     void read_queues(std::istream &is);
     void read_ev(std::istream & is);//чтение событий
-
-#if DEBUG
     void read_env(std::istream &is);
-#endif //  DEBUG
+
 
 };
 
