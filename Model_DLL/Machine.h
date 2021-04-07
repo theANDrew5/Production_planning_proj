@@ -11,6 +11,13 @@
 
 //Класс интерфейс
 
+enum MachineType
+{
+    FLOW,   //0
+    GROUP,  //1
+    STACK   //2
+};
+
 class Machine
 {
 public:
@@ -30,17 +37,19 @@ public:
 	void addRecipe(Recipe newRecipe);
 
     friend void to_json(json& j, const Machine& mch);
+    friend void from_json(const json& j, Machine* mch);
 
     friend std::ostream& operator<<(std::ostream& os, Machine& p);//перегрузка оператора <<
 
 protected:
-    std::string _type;//тип обработки
+    std::string _mtype;//тип обработки
     unsigned int _ID;//имя
     bool _state;//состояние
     unsigned int _time;//время смены рецепта
     std::deque <Recipe> _recipes;//рецепты на машине
     std::list <Batch*> _batches;// входная очередь в виде ссылок на партии
     Recipe _last_resipe;//последний рецепт
+    MachineType _type;//TODO перейти на перечислимый тип
 
     virtual json to_json() const = 0;
 };
