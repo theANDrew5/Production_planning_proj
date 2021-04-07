@@ -24,6 +24,7 @@ unsigned int Recipe::get_time() const
     return this->_time;
 }
 
+
 void to_json(json& j, const Recipe& r)
 {
     j = json{
@@ -49,7 +50,7 @@ std::ostream &operator<<(std::ostream & os, Recipe & p)//перегрузка о
     return os<<"ID: "<<p._ID<<"\tTIME: "<<p._time;
 }
 
-bool operator==(Recipe &left, Recipe &right)
+bool operator==(const Recipe &left, const Recipe &right)
 {
     if(left._ID==right._ID && left._time==right._time) return true;
     else return false;
@@ -61,7 +62,7 @@ bool operator==(const Recipe &left, const Recipe &right)
     else return false;
 }
 
-bool operator!=(Recipe &left, Recipe &right) {
+bool operator!=(const Recipe &left, const Recipe &right) {
     if(left._ID!=right._ID && left._time!=right._time) return true;
     else return false;
 }

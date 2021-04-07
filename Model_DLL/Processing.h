@@ -3,6 +3,7 @@
 #include "Batch.h"
 #include "Recipe.h"
 
+class Machine;
 
 enum ProcessingType
 {
@@ -15,36 +16,38 @@ enum ProcessingType
 class IProcessing
 {
 public:
+	IProcessing(const Machine& mptr);
 
-	virtual unsigned int push_ev(std::list <Batch*> &batches, std::deque<Recipe> &recipes, Recipe& last_resipe, unsigned int& time) = 0;//метод возвращает время события
-	virtual void execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe) = 0;//метод выполняет событие
+	virtual unsigned int push_ev() = 0;//метод возвращает время события
+	virtual void execute(std::ostream* log) = 0;//метод выполняет событие
 
 	virtual ~IProcessing() = default;
 
 protected:
-	ProcessingType _type;//TODO перейти на перечислимый тип
+	ProcessingType _type;
+	Machine* const _mptr;
 };
 
 //Потоковая обработка
 class Flow_Processing: public IProcessing
 {
 public:
-	Flow_Processing();
+	Flow_Processing(const Machine& mptr);
 	~Flow_Processing() = default;
 
-	unsigned int push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time) override;
-	void execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe) override;//метод выполняет событие
+	unsigned int push_ev() override;
+	void execute(std::ostream* log) override;//метод выполняет событие
 };
 
 //Обработка группой изделий
 class Group_Processing: public IProcessing
 {
 public:
-	Group_Processing(int count);
+	Group_Processing(const Machine& mptr, int count);
 	~Group_Processing() = default;
 
-	unsigned int push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time);//метод возвращает время события
-	void execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe);//метод выполняет событие
+	unsigned int push_ev() override;//метод возвращает время события
+	void execute(std::ostream* log);//метод выполняет событие
 
 private:
 	unsigned int _count;
@@ -56,11 +59,11 @@ private:
 class Stack_Processing: public IProcessing
 {
 public:
-	Stack_Processing(int count);
+	Stack_Processing(const Machine& mptr, int count);
 	~Stack_Processing() = default;
 
-	unsigned int push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time) override;//метод возвращает время события
-	void execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe) override;//метод выполняет событие
+	unsigned int push_ev() override;//метод возвращает время события
+	void execute(std::ostream* log) override;//метод выполняет событие
 
 private:
 	unsigned int _count;

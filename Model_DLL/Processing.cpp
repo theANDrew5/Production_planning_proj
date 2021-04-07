@@ -1,24 +1,31 @@
 #include "pch.h"
 #include "Processing.h"
+#include "Machine.h"
 
+
+
+//========================		IProcessing class methods	================================
+IProcessing::IProcessing(const Machine& mptr):_mptr(&mptr)
+{
+}
 
 //========================		Flow_Processing class methods	================================
-Flow_Processing::Flow_Processing():IProcessing()
+Flow_Processing::Flow_Processing(const Machine& mptr):IProcessing(mptr)
 {
 	this->_type = FLOW;
 }
 
-unsigned int Flow_Processing::push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time)
+unsigned int Flow_Processing::push_ev()
 {
-    if (!batches.empty())
+    if (!_mptr->_batches.empty())
     {
-        Batch* it = batches.front();
+        Batch* it = _mptr->_batches.front();
         Recipe& rcp = it->get_first();
-        if (std::any_of(recipes.begin(), recipes.end(), [rcp](Recipe const r) {return rcp == r; }))
+        if (std::any_of(_mptr->_recipes.begin(), _mptr->_recipes.end(), [rcp](Recipe const r) {return rcp == r; }))
             //проверка рецептов
         {
-            return  ((last_resipe == it->get_first()) ?
-                rcp.get_time() * it->get_count() : rcp.get_time() * it->get_count() + time); //OK
+            return  ((_mptr->_last_resipe == it->get_first()) ?
+                rcp.get_time() * it->get_count() : rcp.get_time() * it->get_count() + _mptr->_time); //OK
         }
         else throw (it);//ошибка в очереди партия с неверным рецептом
     }
@@ -29,46 +36,46 @@ unsigned int Flow_Processing::push_ev(std::list <Batch*>& batches, std::deque<Re
     }
 }
 
-void Flow_Processing::execute(std::ostream* log, unsigned int& ID , unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe)
+void Flow_Processing::execute(std::ostream* log)
 {
-    Batch* bt_ptr = batches.front();
-    if (last_resipe != bt_ptr->get_first())
+    Batch* bt_ptr = _mptr->_batches.front();
+    if (_mptr->_last_resipe != bt_ptr->get_first())
     {
-        *log << "Change_recipe\tMachine_ID: " << ID << "\ttime: " << time << '\n';
-        last_resipe = bt_ptr->get_first();
+        *log << "Change_recipe\tMachine_ID: " << _mptr->_ID << "\ttime: " << time << '\n';
+        _mptr->_last_resipe = bt_ptr->get_first();
         //вставить вывод в лог
     }
-    *log << "Execute_batch\tMachine_ID: " << ID << "\tBatch_ID: " << bt_ptr->get_first().get_ID();
+    *log << "Execute_batch\tMachine_ID: " << _mptr->_ID << "\tBatch_ID: " << bt_ptr->get_first().get_ID();
     bt_ptr->execute();
-    batches.pop_front();
+    _mptr->_batches.pop_front();
 }
 
 //========================		Group_Processing class methods	================================
 
-Group_Processing::Group_Processing(int count): IProcessing()
+Group_Processing::Group_Processing(const Machine& mptr, int count): IProcessing(mptr)
 {
     this->_type = GROUP;
     this->_count = count;
 }
 
-unsigned int Group_Processing::push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time)
+unsigned int Group_Processing::push_ev()
 {
 
     //		Check if queue is empty
-    if (!batches.empty())
+    if (!_mptr->_batches.empty())
     {
-        Batch* firstBatchPtr = batches.front();
+        Batch* firstBatchPtr = _mptr->_batches.front();
 
         Recipe& firstBatchRecipeRef = firstBatchPtr->get_first();
 
-        if (std::any_of(recipes.begin(), recipes.end(), [firstBatchRecipeRef](Recipe const r) {return firstBatchRecipeRef == r; }))
+        if (std::any_of(_mptr->_recipes.begin(), _mptr->_recipes.end(), [firstBatchRecipeRef](Recipe const r) {return firstBatchRecipeRef == r; }))
             //проверка рецептов
         {
-            return  ((last_resipe == firstBatchPtr->get_first()) ?
+            return  ((_mptr->_last_resipe == firstBatchPtr->get_first()) ?
 
                 firstBatchRecipeRef.get_time() :
 
-                firstBatchRecipeRef.get_time() + time); //OK
+                firstBatchRecipeRef.get_time() + _mptr->_time); //OK
         }
         else throw (firstBatchPtr);//ошибка в очереди партия с неверным рецептом
 
@@ -83,14 +90,14 @@ unsigned int Group_Processing::push_ev(std::list <Batch*>& batches, std::deque<R
     }
 }
 
-void Group_Processing::execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe)
+void Group_Processing::execute(std::ostream* log)
 {
     //		Check if the recipe need to be changed, and change it if requireed
-    Batch* btcPtr = batches.front();
-    if (last_resipe != btcPtr->get_first())
+    Batch* btcPtr = _mptr->_batches.front();
+    if (_mptr->_last_resipe != btcPtr->get_first())
     {
-        last_resipe = btcPtr->get_first();
-        *log << "Change_recipe\tMachine_ID: " << ID << "\ttime: " << time << '\n';
+        _mptr->_last_resipe = btcPtr->get_first();
+        *log << "Change_recipe\tMachine_ID: " << _mptr->_ID << "\ttime: " << time << '\n';
 
     }
 
@@ -98,12 +105,12 @@ void Group_Processing::execute(std::ostream* log, unsigned int& ID, unsigned int
     int tmpCntr = 0;
 
     //		Count the group of Batchs with the same recipe from queue, and call Batch.execute() for each of them 
-    for (auto iter = batches.begin(); iter != batches.end(); iter++)
+    for (auto iter = _mptr->_batches.begin(); iter != _mptr->_batches.end(); iter++)
     {
-        if ((*iter)->get_first() != last_resipe || tmpCntr == this->_count) break;
+        if ((*iter)->get_first() != _mptr->_last_resipe || tmpCntr == this->_count) break;
         (*iter)->execute();
 
-        *log << "Execute_batch\tMachine_ID: " << ID << "\tBatch_ID: " << (*iter)->get_ID() << "\n";
+        *log << "Execute_batch\tMachine_ID: " << _mptr->_ID << "\tBatch_ID: " << (*iter)->get_ID() << "\n";
 
         tmpCntr++;
 
@@ -112,30 +119,30 @@ void Group_Processing::execute(std::ostream* log, unsigned int& ID, unsigned int
     //		Drop n = tmpCntr Batches from queue
     for (int i = 0; i < tmpCntr; i++)
     {
-        batches.pop_front();
+        _mptr->_batches.pop_front();
     }
 }
 
 //========================		Stack_Processing class methods	================================
 
-Stack_Processing::Stack_Processing(int count)
+Stack_Processing::Stack_Processing(const Machine& mptr, int count):IProcessing(mptr)
 {
     this->_type = STACK;
     this->_count = count;
 }
 
-unsigned int Stack_Processing::push_ev(std::list <Batch*>& batches, std::deque<Recipe>& recipes, Recipe& last_resipe, unsigned int& time)
+unsigned int Stack_Processing::push_ev()
 {
-    if (!batches.empty())
+    if (!_mptr->_batches.empty())
     {
-        Batch* it = batches.front();
+        Batch* it = _mptr->_batches.front();
         Recipe& rcp = it->get_first();
-        if (std::any_of(recipes.begin(), recipes.end(), [rcp](Recipe const r) {return rcp == r; }))
+        if (std::any_of(_mptr->_recipes.begin(), _mptr->_recipes.end(), [rcp](Recipe const r) {return rcp == r; }))
             //проверка рецептов
         {
-            return  ((last_resipe == it->get_first()) ?
+            return  ((_mptr->_last_resipe == it->get_first()) ?
                 rcp.get_time() * (int(it->get_count() / this->_count) + 1) :
-                rcp.get_time() * (int(it->get_count() / this->_count) + 1) + time); //OK
+                rcp.get_time() * (int(it->get_count() / this->_count) + 1) + _mptr->_time); //OK
         }
         else throw (it);//ошибка в очереди партия с неверным рецептом
     }
@@ -146,16 +153,18 @@ unsigned int Stack_Processing::push_ev(std::list <Batch*>& batches, std::deque<R
     }
 }
 
-void Stack_Processing::execute(std::ostream* log, unsigned int& ID, unsigned int& time, std::list <Batch*>& batches, Recipe& last_resipe)
+void Stack_Processing::execute(std::ostream* log)
 {
-    Batch* bt_ptr = batches.front();
-    if (last_resipe != bt_ptr->get_first())
+    Batch* bt_ptr = _mptr->_batches.front();
+    if (_mptr->_last_resipe != bt_ptr->get_first())
     {
-        *log << "Change_recipe\tMachine_ID: " << ID << "\ttime: " << time << '\n';
-        last_resipe = bt_ptr->get_first();
+        *log << "Change_recipe\tMachine_ID: " << _mptr->_ID << "\ttime: " << time << '\n';
+        _mptr->_last_resipe = bt_ptr->get_first();
         //вставить вывод в лог
     }
-    *log << "Execute_batch\tMachine_ID: " << ID << "\tBatch_ID: " << bt_ptr->get_ID();
+    *log << "Execute_batch\tMachine_ID: " << _mptr->_ID << "\tBatch_ID: " << bt_ptr->get_ID();
     bt_ptr->execute();
-    batches.pop_front();
+    _mptr->_batches.pop_front();
 }
+
+

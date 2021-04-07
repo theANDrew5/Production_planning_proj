@@ -14,11 +14,14 @@ public:
     unsigned int get_ID() const;//геттер ID рецепта
     unsigned int get_time() const;//геттер времени рецепта
 
+
     friend std::istream & operator>> (std::istream & is, Recipe & p);//перегрузка оператора сдвига для потока ввода
     friend std::ostream &operator<<(std::ostream & os, Recipe & p);//перегрузка оператора сдвига для вывода
-    friend bool operator==(Recipe &left, Recipe &right);//перегрузка оператора сравнения
-    friend bool operator!=(Recipe &left, Recipe &right);//перегрузка оператора сравнения
+
     friend bool operator==(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
+    friend bool operator!=(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
+    friend bool operator==(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
+    
 
     friend void from_json(const json& j, Recipe& r);
 

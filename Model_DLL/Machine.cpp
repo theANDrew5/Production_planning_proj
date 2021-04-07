@@ -14,7 +14,7 @@ Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, bool s
     switch (type)
     {
     case FLOW:
-        this->Processor = new Flow_Processing();
+        this->_processor = new Flow_Processing();
         break;
     case GROUP:
         break;
@@ -33,10 +33,10 @@ Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsign
     case FLOW:
         break;
     case GROUP:
-        this->Processor = new Group_Processing(count);
+        this->_processor = new Group_Processing(count);
         break;
     case STACK:
-        this->Processor = new Stack_Processing(count);
+        this->_processor = new Stack_Processing(count);
         break;
     default:
         break;
@@ -112,7 +112,7 @@ void Machine::replace_queue(std::deque<Batch *> &container)
 
 std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка оператора сдвига для вывода
 {
-    os<<"TYPE: "<<p._type;
+    //os<<"TYPE: "<<p._type;
     os<<"\tID: "<<p._ID;
     os<<"\tSTATE: "<<p._state;
     os<<"\tTIME "<<p._time;
