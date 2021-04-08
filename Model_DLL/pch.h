@@ -19,6 +19,7 @@
 #include <sstream>
 #include <functional>
 #include <fstream>
+#include <map>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;

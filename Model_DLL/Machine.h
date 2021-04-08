@@ -32,7 +32,7 @@ public:
     //virtual void execute(std::ostream *log) =0;//метод выполняет событие
 
     unsigned int get_ID();//возвращает ID машины
-    void insert_batch(Batch* btc, unsigned int pos);//вставляет партию в очередь
+    void insert_batch(Batch* btc, unsigned int pos=0);//вставляет партию в очередь
     void insert_batch(std::deque <Batch*> &container, unsigned int pos=0);//вставляет несколько партий в очередь
     void replace_queue(std::deque <Batch*> &container);//заменяет очередь
     bool check_queue();//проверяет на нулевую очередь
@@ -43,6 +43,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, Machine& p);//перегрузка оператора <<
 
+    IProcessing* _processor;
+
 private:
     unsigned int _ID;//имя
     bool _state;//состояние
@@ -50,7 +52,7 @@ private:
     std::deque <Recipe> _recipes;//рецепты на машине
     std::list <Batch*> _batches;// входная очередь в виде ссылок на партии
     Recipe _last_resipe;//последний рецепт
-    IProcessing* _processor;
+
 
 
 

@@ -82,12 +82,11 @@ bool Machine::check_queue()
 
 void Machine::insert_batch(Batch* btc, unsigned int pos)
 {
-	//замена нулевого элемента неадо исправить
-	/*
-	if (pos == 0) //нельзя заменять нулевой элемент он уже в потоке событий!
+	if (pos == 0) //если pos = 0 добавляем в конец
 	{
-		throw(-1);
-	}*/
+        this->_batches.push_back(btc);
+        return;
+	}
     unsigned int n = 0;
     auto btc_pos = this->_batches.begin();
     while (n!= pos && !this->_batches.empty())
@@ -101,16 +100,21 @@ void Machine::insert_batch(Batch* btc, unsigned int pos)
 
 void Machine::insert_batch(std::deque<Batch*> &container, unsigned int pos)
 {//замена нулевого элемента неадо исправить
-	/*
+
 	if (pos == 0) //нельзя заменять нулевой элемент он уже в потоке событий!
 	{
-		throw(-1);
+        this->_batches.insert(this->_batches.end(), container.begin(), container.end());
+        return;
 	}
-	*/
-    for (auto n:container)
+    unsigned int n = 0;
+    auto btc_pos = this->_batches.begin();
+    while (n != pos && !this->_batches.empty())
     {
-        this->insert_batch(n,pos++);
+        btc_pos++;
+        n++;
     }
+    this->_batches.insert(btc_pos, container.begin(), container.end());
+
 }
 
 void Machine::replace_queue(std::deque<Batch *> &container)
