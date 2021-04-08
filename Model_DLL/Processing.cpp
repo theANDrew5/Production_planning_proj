@@ -5,14 +5,25 @@
 
 
 //========================		IProcessing class methods	================================
-IProcessing::IProcessing(const Machine& mptr):_mptr(&mptr)
+IProcessing::IProcessing(Machine& mptr):_mptr(&mptr)
 {
 }
 
-//========================		Flow_Processing class methods	================================
-Flow_Processing::Flow_Processing(const Machine& mptr):IProcessing(mptr)
+ProcessingType IProcessing::get_type()
 {
-	this->_type = FLOW;
+    return this->_type;
+}
+
+unsigned int IProcessing::get_count()
+{
+    return this->_count;
+}
+
+//========================		Flow_Processing class methods	================================
+Flow_Processing::Flow_Processing(Machine& mptr):IProcessing(mptr)
+{
+	this->_type = ProcessingType::FLOW;
+    this->_count = 1;
 }
 
 unsigned int Flow_Processing::push_ev()
@@ -52,9 +63,9 @@ void Flow_Processing::execute(std::ostream* log)
 
 //========================		Group_Processing class methods	================================
 
-Group_Processing::Group_Processing(const Machine& mptr, int count): IProcessing(mptr)
+Group_Processing::Group_Processing(Machine& mptr, int count): IProcessing(mptr)
 {
-    this->_type = GROUP;
+    this->_type = ProcessingType::GROUP;
     this->_count = count;
 }
 
@@ -125,9 +136,9 @@ void Group_Processing::execute(std::ostream* log)
 
 //========================		Stack_Processing class methods	================================
 
-Stack_Processing::Stack_Processing(const Machine& mptr, int count):IProcessing(mptr)
+Stack_Processing::Stack_Processing(Machine& mptr, int count):IProcessing(mptr)
 {
-    this->_type = STACK;
+    this->_type = ProcessingType::STACK;
     this->_count = count;
 }
 

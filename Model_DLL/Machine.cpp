@@ -8,45 +8,60 @@
 
 //========================		Machine class methods	================================ класс интерфейс
 
-Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, bool state, unsigned int time, std::list<Batch*> batches):
+//Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, bool state, std::list<Batch*> batches, Recipe l_rcp):
+//    _ID(ID), _recipes(recipes), _batches(batches), _state(state), _time(time)
+//{
+//    switch (type)
+//    {
+//    case FLOW:
+//
+//    case GROUP:
+//        break;
+//    case STACK:
+//        break;
+//    default:
+//        break;
+//    }
+//    if (l_rcp!=NULL)
+//        this->_last_resipe = l_rcp;
+//    else
+//        this->_last_resipe = Recipe();
+//}
+
+Machine::Machine()
+{
+
+}
+
+Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp):
     _ID(ID), _recipes(recipes), _batches(batches), _state(state), _time(time)
 {
     switch (type)
     {
-    case FLOW:
-        this->_processor = new Flow_Processing();
+    case ProcessingType::FLOW:
+        this->_processor = new Flow_Processing(*this);
         break;
-    case GROUP:
+    case ProcessingType::GROUP:
+        this->_processor = new Group_Processing(*this, count);
         break;
-    case STACK:
+    case ProcessingType::STACK:
+        this->_processor = new Stack_Processing(*this, count);
         break;
     default:
         break;
     }
-    this->_last_resipe = Recipe();
+    if (l_rcp != NULL)
+        this->_last_resipe = l_rcp;
+    else
+        this->_last_resipe = Recipe();
 }
 
-Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int count, bool state, unsigned int time, std::list<Batch*> batches)
-{
-    switch (type)
-    {
-    case FLOW:
-        break;
-    case GROUP:
-        this->_processor = new Group_Processing(count);
-        break;
-    case STACK:
-        this->_processor = new Stack_Processing(count);
-        break;
-    default:
-        break;
-    }
-    this->_last_resipe = Recipe();
-}
+
 
 Machine::Machine(const Machine &p):
-_ID(p._ID), _batches(p._batches),_recipes(p._recipes), _state(p._state),_time(p._time)
-{_last_resipe= Recipe ();}
+    _ID(p._ID), _processor(p._processor), _recipes(p._recipes), _time(p._time), _state(p._state), _batches(p._batches), _last_resipe(p._last_resipe)
+{
+}
 
 
 unsigned int Machine::get_ID()
@@ -108,6 +123,39 @@ void Machine::replace_queue(std::deque<Batch *> &container)
     {
         this->insert_batch(n,pos++);
     }
+}
+
+void to_json(json& j, const Machine& mch)
+{
+    //std::deque <int> batch_IDs;
+
+    //for (auto btc : mch._batches)
+    //    batch_IDs.push_back(btc->get_ID());
+
+    //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp) :
+
+    j = json{
+        {"Machine_ID", mch._ID},
+        {"Machine_type", mch._processor->get_type()},
+        {"Machine_recipes", mch._recipes},
+        {"Machine_time", mch._time},
+        {"Machine_count", mch._processor->get_count()}
+        //{"Machine_state", mch._state},
+        //{"Machine_batches", batch_IDs},
+        //{"Machine_last_resipe", mch._last_resipe}
+    };
+}
+
+void from_json(const json& j, Machine& mch)
+{
+    //(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp)
+    Machine p = Machine(
+        j.at("Machine_ID").get<int>(),
+        j.at("Machine_type").get<ProcessingType>(),
+        j.at("Machine_recipes").get<std::deque<Recipe>>(),
+        j.at("Machine_time").get<int>(),
+        j.at("Machine_count").get<int>());
+    mch = p;
 }
 
 std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка оператора сдвига для вывода

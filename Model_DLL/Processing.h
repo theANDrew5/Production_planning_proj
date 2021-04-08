@@ -5,7 +5,7 @@
 
 class Machine;
 
-enum ProcessingType
+enum class ProcessingType
 {
 	FLOW,   //0
 	GROUP,  //1
@@ -16,23 +16,27 @@ enum ProcessingType
 class IProcessing
 {
 public:
-	IProcessing(const Machine& mptr);
+	IProcessing(Machine& mptr);
 
 	virtual unsigned int push_ev() = 0;//метод возвращает время события
 	virtual void execute(std::ostream* log) = 0;//метод выполняет событие
 
 	virtual ~IProcessing() = default;
 
+	ProcessingType get_type();
+	unsigned int get_count();
+
 protected:
 	ProcessingType _type;
 	Machine* const _mptr;
+	unsigned int _count;
 };
 
 //Потоковая обработка
 class Flow_Processing: public IProcessing
 {
 public:
-	Flow_Processing(const Machine& mptr);
+	Flow_Processing(Machine& mptr);
 	~Flow_Processing() = default;
 
 	unsigned int push_ev() override;
@@ -43,15 +47,13 @@ public:
 class Group_Processing: public IProcessing
 {
 public:
-	Group_Processing(const Machine& mptr, int count);
+	Group_Processing(Machine& mptr, int count);
 	~Group_Processing() = default;
 
 	unsigned int push_ev() override;//метод возвращает время события
 	void execute(std::ostream* log);//метод выполняет событие
 
 private:
-	unsigned int _count;
-
 	Group_Processing();
 };
 
@@ -59,14 +61,12 @@ private:
 class Stack_Processing: public IProcessing
 {
 public:
-	Stack_Processing(const Machine& mptr, int count);
+	Stack_Processing(Machine& mptr, int count);
 	~Stack_Processing() = default;
 
 	unsigned int push_ev() override;//метод возвращает время события
 	void execute(std::ostream* log) override;//метод выполняет событие
 
 private:
-	unsigned int _count;
-
 	Stack_Processing();
 };

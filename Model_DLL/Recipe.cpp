@@ -50,11 +50,6 @@ std::ostream &operator<<(std::ostream & os, Recipe & p)//перегрузка о
     return os<<"ID: "<<p._ID<<"\tTIME: "<<p._time;
 }
 
-bool operator==(const Recipe &left, const Recipe &right)
-{
-    if(left._ID==right._ID && left._time==right._time) return true;
-    else return false;
-}
 
 bool operator==(const Recipe &left, const Recipe &right)
 {

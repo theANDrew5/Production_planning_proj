@@ -20,7 +20,6 @@ public:
 
     friend bool operator==(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
     friend bool operator!=(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
-    friend bool operator==(const Recipe &left, const Recipe &right);//перегрузка оператора сравнения
     
 
     friend void from_json(const json& j, Recipe& r);

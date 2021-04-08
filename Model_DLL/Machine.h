@@ -21,13 +21,15 @@ class Machine
 
 public:
 
-    Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, bool state = true, unsigned int time = 0, std::list<Batch*> batches = {});
-    Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int count, bool state = true, unsigned int time = 0, std::list<Batch*> batches = {});
+    Machine();//конструктор без параметров
+
+    //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp=NULL);
+    Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = NULL);
     Machine(const Machine & p);//конструктор копирования
     ~Machine() = default;//деструктор
 
-    virtual unsigned int push_ev()=0;//метод возвращает время события
-    virtual void execute(std::ostream *log) =0;//метод выполняет событие
+    //virtual unsigned int push_ev()=0;//метод возвращает время события
+    //virtual void execute(std::ostream *log) =0;//метод выполняет событие
 
     unsigned int get_ID();//возвращает ID машины
     void insert_batch(Batch* btc, unsigned int pos);//вставляет партию в очередь
@@ -37,7 +39,7 @@ public:
 	void addRecipe(Recipe newRecipe);
 
     friend void to_json(json& j, const Machine& mch);
-    friend void from_json(const json& j, Machine* mch);
+    friend void from_json(const json& j, Machine& mch);
 
     friend std::ostream& operator<<(std::ostream& os, Machine& p);//перегрузка оператора <<
 
@@ -50,7 +52,7 @@ private:
     Recipe _last_resipe;//последний рецепт
     IProcessing* _processor;
 
-    Machine();//конструктор без параметров
 
-    virtual json to_json() const = 0;
+
+    //json to_json() const;
 };
