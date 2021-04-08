@@ -39,9 +39,6 @@
     <ClInclude Include="Recipe.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="IEnvironement.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="Processing.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

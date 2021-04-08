@@ -24,12 +24,13 @@ public:
     Machine();//конструктор без параметров
 
     //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp=NULL);
-    Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = NULL);
+    Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, 
+        bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = Recipe());
     Machine(const Machine & p);//конструктор копирования
     ~Machine() = default;//деструктор
 
-    //virtual unsigned int push_ev()=0;//метод возвращает время события
-    //virtual void execute(std::ostream *log) =0;//метод выполняет событие
+    //MODEL_DLL_API unsigned int push_ev()=0;//метод возвращает время события
+    //MODEL_DLL_API void execute(std::ostream *log) =0;//метод выполняет событие
 
     unsigned int get_ID();//возвращает ID машины
     void insert_batch(Batch* btc, unsigned int pos=0);//вставляет партию в очередь

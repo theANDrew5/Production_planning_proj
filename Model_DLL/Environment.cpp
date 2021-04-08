@@ -25,6 +25,7 @@ Environment::Environment(std::string name, std::list<Batch>& batches, std::list<
     }
 }
 
+
 Batch& Environment::search_batch(unsigned int btc_ID)
 {
 
@@ -43,14 +44,16 @@ std::deque<Event>::iterator Environment::search_event(Machine& ptr)
     return it;
 }
 
-void Environment::add_batch(unsigned int ID, unsigned int count, std::deque<Recipe> recipes)
+void Environment::add_batch(std::string j_string)
 {
-    this->_batches.insert(std::pair<int, Batch>(ID, Batch(ID, count, recipes)));
+    json j = json::parse(j_string);
+    this->_batches.insert(std::pair<int, Batch>(j.at("Batch_ID").get<unsigned int>(), Batch(j.get<Batch>())));
 }
 
-void Environment::add_machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp)
+void Environment::add_machine(std::string j_string)
 {
-    this->_machines.insert(std::pair<int, Machine>(ID, Machine(ID, type, recipes, time, count, state, batches, l_rcp)));
+    json j = json::parse(j_string);
+    this->_machines.insert(std::pair<int, Machine>(j.at("Machine_ID").get<unsigned int>(), Machine(j.get<Machine>())));
 }
 
 void Environment::change_event(Machine& mch)
@@ -230,6 +233,41 @@ void Environment::replace_queue(std::vector<unsigned int> btc_IDs, unsigned int 
     *this->_messages<<"\tMachine:\t"<<mch_ID<<'\n';
 }
 
+void Environment::do_step_till_machine(unsigned int mch_ID)
+{
+    Machine* m_ptr = &this->search_machine(mch_ID);
+    while (this->_events.front().get_ptr() != m_ptr)
+    {
+        this->do_step(1);
+    }
+}
+
+void Environment::time_shift(unsigned int time)
+{
+    while (this->_events.front().get_time() < time)
+    {
+        time -= this->_events.front().get_time();
+        this->do_step(1);
+    }
+    for (auto n : this->_events)
+    {
+        n.time_shift(time);
+    }
+    this->_global_model_time += time;
+
+    if (DEBUG) std::cout << this->_global_model_time << '\n';
+}
+
+
+void to_json(json& j, const Environment& env)
+{
+    j = json{
+        {"Environment_name", env._name},
+        {"Environment_batches", env._batches},
+        {"Environment_machines", env._machines}
+    };
+}
+
 
 #if DEBUG
 //отладочный метод для просмотра среды
@@ -261,33 +299,6 @@ void Environment::print_env()
 }
 #endif
 
-
-void Environment::do_step_till_machine(unsigned int mch_ID)
-{
-    Machine* m_ptr=&this->search_machine(mch_ID);
-    while (this->_events.front().get_ptr()!=m_ptr)
-    {
-        this->do_step(1);
-    }
-}
-
-
-
-void Environment::time_shift(unsigned int time)
-{
-    while (this->_events.front().get_time()<time)
-    {
-        time-=this->_events.front().get_time();
-        this->do_step(1);
-    }
-    for (auto n:this->_events)
-    {
-        n.time_shift(time);
-    }
-    this->_global_model_time+=time;
-
-    if (DEBUG) std::cout<<this->_global_model_time<<'\n';
-}
 
 
 

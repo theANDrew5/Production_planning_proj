@@ -9,10 +9,9 @@
 #include "Event.h"
 #include "Batch.h"
 #include "Machine.h"
-#include "IEnvironement.h"
 //static const bool DEBUG = true;
 
-class Environment: public IEnvironement
+class Environment
 {
 public:
     Environment(std::string name, std::map <unsigned int, Batch>& batches, std::map <unsigned int, Machine>& machines, 
@@ -26,8 +25,8 @@ public:
 
     friend std::ostream & operator<< (std::ostream & os, Environment & p);//перегрузка оператора <<
 
-    void add_batch(unsigned int ID, unsigned int count, std::deque<Recipe> recipes);
-    void add_machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = NULL);
+    void add_batch(std::string j_string);//добавить в модель партию
+    void add_machine(std::string j_string);//добавить в модель машину
 
     void time_shift(unsigned int time);//сдвинуть время модели
     void do_step_till_machine(unsigned int mch_ID);//моделировать до машины ID
@@ -38,6 +37,8 @@ public:
     //вставить в очередь машины несколько партий
     void replace_queue(std::vector<unsigned int>btc_IDs, unsigned int mch_ID);//замена очереди, не заменяет нулевой элемент
 
+//JSON methods
+    friend void to_json(json& j, const Environment& env);
     
 
     #if DEBUG

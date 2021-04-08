@@ -34,7 +34,7 @@ Machine::Machine()
 }
 
 Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp):
-    _ID(ID), _recipes(recipes), _batches(batches), _state(state), _time(time)
+    _ID(ID), _recipes(recipes), _time(time), _state(state), _batches(batches), _last_resipe(l_rcp)
 {
     switch (type)
     {
@@ -50,10 +50,6 @@ Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsign
     default:
         break;
     }
-    if (l_rcp != NULL)
-        this->_last_resipe = l_rcp;
-    else
-        this->_last_resipe = Recipe();
 }
 
 
