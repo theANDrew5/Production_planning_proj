@@ -25,6 +25,14 @@ Environment::Environment(std::string name, std::list<Batch>& batches, std::list<
     }
 }
 
+Environment::Environment(const Environment& env):
+    _name(env._name), _batches(env._batches), _machines(env._machines), _events(env._events), _global_model_time(env._global_model_time)
+{
+}
+
+Environment::Environment():
+    _batches(*new std::map<unsigned int, Batch>{}), _machines(*new std::map<unsigned int, Machine>{}), _events(*new std::deque <Event>{})
+{}
 
 Batch& Environment::search_batch(unsigned int btc_ID)
 {
@@ -261,11 +269,41 @@ void Environment::time_shift(unsigned int time)
 
 void to_json(json& j, const Environment& env)
 {
+    std::list <Batch>& bt_list = *new std::list <Batch>;
+    std::list <Machine>& mch_list = *new std::list <Machine>;
+
+    for (auto batch : env._batches)
+        bt_list.push_back(batch.second);
+    for (auto mch : env._machines)
+        mch_list.push_back(mch.second);
+
     j = json{
         {"Environment_name", env._name},
-        {"Environment_batches", env._batches},
-        {"Environment_machines", env._machines}
+        {"Environment_batches", bt_list},
+        {"Environment_machines", mch_list}
     };
+}
+
+void from_json(const json& j, Environment& env)
+{
+    //std::string name, std::map<unsigned int, Batch>& batches, std::map<unsigned int, Machine>& machines,
+    //    std::deque<Event>& events, unsigned int global_model_time
+    //std::list <Batch> bt_list = j.at("Environment_batches").get<std::list<Batch>>();
+    //std::list <Machine> mch_list = j.at("Environment_machines").get<std::list<Machine>>();
+    //env = Environment(
+    //    j.at("Environment_name").get<std::string>(),
+    //    bt_list,
+    //    mch_list);
+    j.at("Environment_name").get_to(env._name);
+    for (auto batch : j.at("Environment_batches").get<std::list<Batch>>())
+    {
+        env._batches.insert(std::pair<unsigned int, Batch>(batch.get_ID(), batch));
+    }
+
+    for (auto machine : j.at("Environment_machines").get<std::list<Machine>>())
+    {
+        env._machines.insert(std::pair<unsigned int, Machine>(machine.get_ID(), machine));
+    }
 }
 
 

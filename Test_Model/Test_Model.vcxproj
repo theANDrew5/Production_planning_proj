@@ -141,6 +141,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Model_DLL\Batch.cpp" />
+    <ClCompile Include="..\Model_DLL\Environment.cpp" />
+    <ClCompile Include="..\Model_DLL\Event.cpp" />
     <ClCompile Include="..\Model_DLL\Machine.cpp" />
     <ClCompile Include="..\Model_DLL\Processing.cpp" />
     <ClCompile Include="..\Model_DLL\Recipe.cpp" />

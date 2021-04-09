@@ -18,10 +18,10 @@ class IProcessing
 public:
 	IProcessing(Machine& mptr);
 
-	MODEL_DLL_API unsigned int push_ev() = 0;//метод возвращает время события
-	MODEL_DLL_API void execute(std::ostream* log) = 0;//метод выполняет событие
+	virtual unsigned int push_ev() = 0;//метод возвращает время события
+	virtual void execute(std::ostream* log) = 0;//метод выполняет событие
 
-	MODEL_DLL_API ~IProcessing() = default;
+	virtual ~IProcessing() = default;
 
 	ProcessingType get_type();
 	unsigned int get_count();

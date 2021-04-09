@@ -18,8 +18,9 @@ public:
         std::deque <Event>& events = *new std::deque <Event>{}, unsigned int global_model_time = 0);
     Environment(std::string name, std::list<Batch>& batches, std::list<Machine>& machines,
         std::deque <Event>& events = *new std::deque <Event>{}, unsigned int global_model_time = 0);
+    Environment(const Environment& env);
+    Environment();
 
-    Environment()=default;
     ~Environment()=default;
 
 
@@ -39,6 +40,7 @@ public:
 
 //JSON methods
     friend void to_json(json& j, const Environment& env);
+    friend void from_json(const json& j, Environment& env);
     
 
     #if DEBUG
