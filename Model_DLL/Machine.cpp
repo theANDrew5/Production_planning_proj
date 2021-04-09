@@ -136,7 +136,7 @@ void to_json(json& j, const Machine& mch)
 
     j = json{
         {"Machine_ID", mch._ID},
-        {"Machine_type", mch._processor->get_type()},
+        {"Machine_processor", mch._processor},
         {"Machine_recipes", mch._recipes},
         {"Machine_time", mch._time},
         {"Machine_count", mch._processor->get_count()}

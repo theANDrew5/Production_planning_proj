@@ -1,5 +1,3 @@
-﻿  Environment.cpp
-D:\PROJECTS\Production_planning_proj\Model_DLL\Environment.cpp(138,27): warning C4018: <: несоответствие типов со знаком и без знака
-  Test_Model.cpp
-  Создание кода...
-  Test_Model.vcxproj -> D:\PROJECTS\Production_planning_proj\Debug\Test_Model.exe
+﻿  Machine.cpp
+D:\PROJECTS\Production_planning_proj\Model_DLL\Machine.cpp(137,13): error C2440: <function-style-cast>: невозможно преобразовать "initializer list" в "json"
+D:\PROJECTS\Production_planning_proj\Model_DLL\Machine.cpp(146,5): message : Ни один конструктор не смог принять исходный тип, либо разрешение перегрузки конструктора неоднозначно

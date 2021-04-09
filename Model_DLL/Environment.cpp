@@ -52,15 +52,13 @@ std::deque<Event>::iterator Environment::search_event(Machine& ptr)
     return it;
 }
 
-void Environment::add_batch(std::string j_string)
+void Environment::add_batch(json j)
 {
-    json j = json::parse(j_string);
     this->_batches.insert(std::pair<int, Batch>(j.at("Batch_ID").get<unsigned int>(), Batch(j.get<Batch>())));
 }
 
-void Environment::add_machine(std::string j_string)
+void Environment::add_machine(json j)
 {
-    json j = json::parse(j_string);
     this->_machines.insert(std::pair<int, Machine>(j.at("Machine_ID").get<unsigned int>(), Machine(j.get<Machine>())));
 }
 
@@ -306,8 +304,19 @@ void from_json(const json& j, Environment& env)
     }
 }
 
+Environment& Environment::operator=(const Environment& env)
+{
+    this->_name = env._name;
+    this->_batches = env._batches;
+    this->_machines = env._machines;
+    this->_events = env._events;
+    this->_global_model_time = env._global_model_time;
+
+    return *this;
+}
 
 #if DEBUG
+
 //отладочный метод для просмотра среды
 void Environment::print_env()
 {

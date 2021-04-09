@@ -96,6 +96,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d  "$(OutDir)Model_DLL.dll" "$(SolutionDir)$(Configuration)\Test_Mode_DLL\"
+xcopy /y /d  "$(OutDir)Model_DLL.lib" "$(SolutionDir)Test_Mode_DLL"
+xcopy /y /d  "$(ProjectDir)Model.h" "$(SolutionDir)Test_Model_DLL"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

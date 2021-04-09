@@ -26,8 +26,8 @@ public:
 
     friend std::ostream & operator<< (std::ostream & os, Environment & p);//перегрузка оператора <<
 
-    void add_batch(std::string j_string);//добавить в модель партию
-    void add_machine(std::string j_string);//добавить в модель машину
+    void add_batch(json j);//добавить в модель партию
+    void add_machine(json j);//добавить в модель машину
 
     void time_shift(unsigned int time);//сдвинуть время модели
     void do_step_till_machine(unsigned int mch_ID);//моделировать до машины ID
@@ -42,6 +42,7 @@ public:
     friend void to_json(json& j, const Environment& env);
     friend void from_json(const json& j, Environment& env);
     
+    Environment& operator= (const Environment& env);
 
     #if DEBUG
         void print_env();
@@ -65,5 +66,6 @@ private:
     std::ostream* _messages = &std::cout;
 
 };
+
 
 

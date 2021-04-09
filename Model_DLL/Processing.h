@@ -26,6 +26,8 @@ public:
 	ProcessingType get_type();
 	unsigned int get_count();
 
+	friend void to_json(json j, const IProcessing& prc);//TODO проблема с процессором
+
 protected:
 	ProcessingType _type;
 	Machine* const _mptr;

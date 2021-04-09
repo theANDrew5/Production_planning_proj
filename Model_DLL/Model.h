@@ -10,12 +10,12 @@
 #endif // !
 
 //предварительные обьявления
-class Environement;
+class Environment;
 
 class Model
 {
 public:
-
+    MODEL_DLL_API Model(std::string config);
 //методы управления структурой модели
 
     MODEL_DLL_API void add_batch(std::string j_string);//добавить в модель партию
@@ -38,7 +38,7 @@ public:
 #endif
 private:
     Model();
-    Environement* Env;
+    Environment& _env;
 
 };
 

@@ -1,53 +1,50 @@
 ﻿// Test_Model.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
 
-#include"pch.h"
-#include "Recipe.h"
-#include "Batch.h"
-#include "Machine.h"
+#include "pch.h"
+
 #include "Environment.h"
-#include <nlohmann/json.hpp>
+#include "Machine.h"
+#include "Batch.h"
+#include "Recipe.h"
 
 int main()
 {
     Recipe *r1 = new Recipe(1, 100);
-    json j{
-        {"Recipe_ID", 2},
-        {"Recipe_time", 200}
-    };
-    Recipe *r2 = new Recipe (j.get<Recipe>());
-    
+       json j{
+           {"Recipe_ID", 2},
+           {"Recipe_time", 200}
+       };
+       Recipe *r2 = new Recipe (j.get<Recipe>());
+       
 
-    Batch& b1 = *new Batch(1, 10, { *r1, *r2 });
-    Batch& b2 = *new Batch(2, 20, { *r1, *r2 });
-    Batch& b3 = *new Batch(3, 30, { *r1, *r2 });
-    
+       Batch& b1 = *new Batch(1, 10, { *r1, *r2 });
+       Batch& b2 = *new Batch(2, 20, { *r1, *r2 });
+       Batch& b3 = *new Batch(3, 30, { *r1, *r2 });
+       
 
+       Machine& mch1 = *new Machine(1, ProcessingType::FLOW, {*r1, *r2 }, 10, 0);
+       Machine& mch2 = *new Machine(2, ProcessingType::GROUP, { *r1, *r2 }, 10, 100);
+       Machine& mch3 = *new Machine(3, ProcessingType::STACK, { *r1, *r2 }, 10, 100);
 
-    //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = NULL);
-    //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state = true, std::list<Batch*> batches = {}, Recipe l_rcp = NULL);
+       json j1 = mch1;
+       json j2 = mch2;
+       json j3 = mch3;
+       
+       Machine mch4 = j1.get<Machine>();
 
-    Machine& mch1 = *new Machine(1, ProcessingType::FLOW, {*r1, *r2 }, 10, 0);
-    Machine& mch2 = *new Machine(2, ProcessingType::GROUP, { *r1, *r2 }, 10, 100);
-    Machine& mch3 = *new Machine(1, ProcessingType::STACK, { *r1, *r2 }, 10, 100);
+       std::list<Batch> bt_list = { b1, b2, b3 };
+       std::list<Machine> mch_list = { mch1, mch2, mch3};
 
-    json j1 = mch1;
-    json j2 = mch2;
-    json j3 = mch3;
+       Environment& env = *new Environment("env1", bt_list, mch_list);
 
-    Machine mch4 = Machine(j1.get<Machine>());
-    Machine mch5 = Machine(j2.get<Machine>());
-    Machine mch6 = j3.get<Machine>();
+       json j5 = env;
 
-    std::list<Batch> bt_list = { b1, b2, b3 };
-    std::list<Machine> mch_list = { mch1, mch1, mch3, mch4, mch5, mch6 };
+       std::string j_str = j5.dump();
 
-    Environment& env = *new Environment("env1", bt_list, mch_list);
+       Environment& env2 = *new Environment (j5);
 
-    json j5 = env;
-
-    Environment env2 = j5.get<Environment>();
-    std::cout << j5 <<'\n';
+       std::cout << j5 <<'\n'<<j_str<<'\n';
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

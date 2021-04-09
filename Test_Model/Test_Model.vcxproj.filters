@@ -18,22 +18,25 @@
     <ClCompile Include="Test_Model.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\Model_DLL\Batch.cpp">
+    <ClCompile Include="..\Model_DLL\Recipe.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="..\Model_DLL\Processing.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\Model_DLL\Recipe.cpp">
+    <ClCompile Include="..\Model_DLL\Model.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="..\Model_DLL\Machine.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="..\Model_DLL\Event.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
     <ClCompile Include="..\Model_DLL\Environment.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="..\Model_DLL\Event.cpp">
+    <ClCompile Include="..\Model_DLL\Batch.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
