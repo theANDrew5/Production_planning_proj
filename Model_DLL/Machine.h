@@ -39,12 +39,16 @@ public:
     bool check_queue();//проверяет на нулевую очередь
 	void addRecipe(Recipe newRecipe);
 
+    //Processing methods
+    unsigned int push_ev();//метод возвращает время события
+    void execute(std::ostream* log);//метод выполняет событие
+
     friend void to_json(json& j, const Machine& mch);
     friend void from_json(const json& j, Machine& mch);
 
     friend std::ostream& operator<<(std::ostream& os, Machine& p);//перегрузка оператора <<
 
-    IProcessing* _processor;
+    
 
 private:
     unsigned int _ID;//имя
@@ -53,6 +57,7 @@ private:
     std::deque <Recipe> _recipes;//рецепты на машине
     std::list <Batch*> _batches;// входная очередь в виде ссылок на партии
     Recipe _last_resipe;//последний рецепт
+    IProcessing* _processor;
 
 
 

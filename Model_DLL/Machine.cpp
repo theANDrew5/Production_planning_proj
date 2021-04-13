@@ -53,10 +53,23 @@ Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsign
 }
 
 
-
+//конструктор копирования
 Machine::Machine(const Machine &p):
-    _ID(p._ID), _processor(p._processor), _recipes(p._recipes), _time(p._time), _state(p._state), _batches(p._batches), _last_resipe(p._last_resipe)
+    _ID(p._ID), _recipes(p._recipes), _time(p._time), _state(p._state), _batches(p._batches), _last_resipe(p._last_resipe)
 {
+    switch (p._processor->get_type())
+    {
+    case ProcessingType::FLOW:
+        this->_processor = new Flow_Processing(*this);
+        break;
+    case ProcessingType::GROUP:
+        this->_processor = new Group_Processing(*this, p._processor->get_count());
+        break;
+
+    case ProcessingType::STACK:
+        this->_processor = new Stack_Processing(*this, p._processor->get_count());
+        break;
+    }
 }
 
 
@@ -125,6 +138,16 @@ void Machine::replace_queue(std::deque<Batch *> &container)
     }
 }
 
+unsigned int Machine::push_ev()
+{
+    return this->_processor->push_ev();
+}
+
+void Machine::execute(std::ostream* log)
+{
+    this->_processor->execute(log);
+}
+
 void to_json(json& j, const Machine& mch)
 {
     //std::deque <int> batch_IDs;
@@ -136,9 +159,9 @@ void to_json(json& j, const Machine& mch)
 
     j = json{
         {"Machine_ID", mch._ID},
-        {"Machine_processor", mch._processor},
         {"Machine_recipes", mch._recipes},
         {"Machine_time", mch._time},
+        {"Machine_ProcessingType", mch._processor->get_type()},
         {"Machine_count", mch._processor->get_count()}
         //{"Machine_state", mch._state},
         //{"Machine_batches", batch_IDs},
@@ -149,13 +172,24 @@ void to_json(json& j, const Machine& mch)
 void from_json(const json& j, Machine& mch)
 {
     //(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp)
-    Machine p = Machine(
-        j.at("Machine_ID").get<int>(),
-        j.at("Machine_type").get<ProcessingType>(),
-        j.at("Machine_recipes").get<std::deque<Recipe>>(),
-        j.at("Machine_time").get<int>(),
-        j.at("Machine_count").get<int>());
-    mch = p;
+        j.at("Machine_ID").get_to(mch._ID),
+        j.at("Machine_recipes").get_to(mch._recipes),
+        j.at("Machine_time").get_to(mch._time);
+
+        switch (j.at("Machine_ProcessingType").get<ProcessingType>())
+        {
+        case ProcessingType::FLOW:
+            mch._processor = new Flow_Processing(mch);
+            break;
+
+        case ProcessingType::GROUP:
+            mch._processor = new Group_Processing(mch, j.at("Machine_count").get<unsigned int>());
+            break;
+
+        case ProcessingType::STACK:
+            mch._processor = new Stack_Processing(mch, j.at("Machine_count").get<unsigned int>());
+            break;
+        }
 }
 
 std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка оператора сдвига для вывода

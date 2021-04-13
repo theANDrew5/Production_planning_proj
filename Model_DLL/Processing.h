@@ -30,7 +30,7 @@ public:
 
 protected:
 	ProcessingType _type;
-	Machine* const _mptr;
+	Machine& _mptr;
 	unsigned int _count;
 };
 

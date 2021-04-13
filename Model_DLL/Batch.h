@@ -14,7 +14,7 @@ public:
     Batch(unsigned int ID=0, unsigned int count=0, std::deque <Recipe> recipes={});//конструктор с параметрами
     Batch(const Batch &p);//конструктор копирования
 
-    Recipe& get_first();//возвращает link первый рецепт в маршрутном листе
+    const Recipe& get_first();//возвращает link первый рецепт в маршрутном листе
     const unsigned int get_count() const;//возвращает количество изделий
     unsigned int get_ID() const;//возвращает ID
 

@@ -73,7 +73,7 @@ void Environment::push_event(Machine &mch)
 {
     try
     {
-        this->_events.emplace_back(mch, mch._processor->push_ev());
+        this->_events.emplace_back(mch, mch.push_ev());
     }
     catch (Batch* bt_ptr)
     {

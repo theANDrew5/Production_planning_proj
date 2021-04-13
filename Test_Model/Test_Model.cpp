@@ -44,7 +44,10 @@ int main()
 
        Environment& env2 = *new Environment (j5);
 
-       std::cout << j5 <<'\n'<<j_str<<'\n';
+       std::ofstream config("model_config.txt");
+       
+       config << j_str;
+       config.close();
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

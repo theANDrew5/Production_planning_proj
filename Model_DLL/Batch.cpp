@@ -9,7 +9,7 @@ Batch::Batch(unsigned int ID,
         unsigned int count, std::deque<Recipe> recipes):_ID(ID),_count(count),_recipes(recipes) {}
 Batch::Batch(const Batch &p): _ID(p._ID), _count(p._count),_recipes(p._recipes) {}
 
-Recipe & Batch::get_first()
+const Recipe & Batch::get_first()
 {
     Recipe &t= this->_recipes.front();
     return t ;

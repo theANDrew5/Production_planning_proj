@@ -36,7 +36,7 @@ Machine *Event::get_ptr()
 
 void Event::execute(std::ostream *log)
 {
-    this->_m_ptr->_processor->execute(log);
+    this->_m_ptr->execute(log);
     *log<<"\ttime: "<< this->_time<<'\n';
 }
 
