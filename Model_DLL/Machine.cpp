@@ -7,19 +7,71 @@
 #include "Machine.h"
 
 //========================		Machine class methods	================================ класс интерфейс
-Machine::Machine() {_last_resipe= Recipe ();}
 
-Machine::Machine(int ID,std::deque<Recipe> recipes, bool state, unsigned int time, std::list<Batch*> batches):
-_ID(ID),_recipes(recipes),_batches(batches), _state(state),_time(time)
+//Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, bool state, std::list<Batch*> batches, Recipe l_rcp):
+//    _ID(ID), _recipes(recipes), _batches(batches), _state(state), _time(time)
+//{
+//    switch (type)
+//    {
+//    case FLOW:
+//
+//    case GROUP:
+//        break;
+//    case STACK:
+//        break;
+//    default:
+//        break;
+//    }
+//    if (l_rcp!=NULL)
+//        this->_last_resipe = l_rcp;
+//    else
+//        this->_last_resipe = Recipe();
+//}
+
+Machine::Machine()
 {
-    _last_resipe=Recipe ();
+
 }
 
-Machine::Machine(const Machine &p):
-_ID(p._ID), _batches(p._batches),_recipes(p._recipes), _state(p._state),_time(p._time)
-{_last_resipe= Recipe ();}
+Machine::Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp):
+    _ID(ID), _recipes(recipes), _time(time), _state(state), _batches(batches), _last_resipe(l_rcp)
+{
+    switch (type)
+    {
+    case ProcessingType::FLOW:
+        this->_processor = new Flow_Processing(*this);
+        break;
+    case ProcessingType::GROUP:
+        this->_processor = new Group_Processing(*this, count);
+        break;
+    case ProcessingType::STACK:
+        this->_processor = new Stack_Processing(*this, count);
+        break;
+    default:
+        break;
+    }
+}
 
-Machine::~Machine() = default;
+
+//конструктор копирования
+Machine::Machine(const Machine &p):
+    _ID(p._ID), _recipes(p._recipes), _time(p._time), _state(p._state), _batches(p._batches), _last_resipe(p._last_resipe)
+{
+    switch (p._processor->get_type())
+    {
+    case ProcessingType::FLOW:
+        this->_processor = new Flow_Processing(*this);
+        break;
+    case ProcessingType::GROUP:
+        this->_processor = new Group_Processing(*this, p._processor->get_count());
+        break;
+
+    case ProcessingType::STACK:
+        this->_processor = new Stack_Processing(*this, p._processor->get_count());
+        break;
+    }
+}
+
 
 unsigned int Machine::get_ID()
 {
@@ -31,6 +83,7 @@ void Machine::addRecipe(Recipe newRecipe)
 	this->_recipes.push_back(newRecipe);
 }
 
+
 bool Machine::check_queue()
 {
     return (this->_batches.empty());
@@ -38,12 +91,11 @@ bool Machine::check_queue()
 
 void Machine::insert_batch(Batch* btc, unsigned int pos)
 {
-	//замена нулевого элемента неадо исправить
-	/*
-	if (pos == 0) //нельзя заменять нулевой элемент он уже в потоке событий!
+	if (pos == 0) //если pos = 0 добавляем в конец
 	{
-		throw(-1);
-	}*/
+        this->_batches.push_back(btc);
+        return;
+	}
     unsigned int n = 0;
     auto btc_pos = this->_batches.begin();
     while (n!= pos && !this->_batches.empty())
@@ -57,16 +109,21 @@ void Machine::insert_batch(Batch* btc, unsigned int pos)
 
 void Machine::insert_batch(std::deque<Batch*> &container, unsigned int pos)
 {//замена нулевого элемента неадо исправить
-	/*
+
 	if (pos == 0) //нельзя заменять нулевой элемент он уже в потоке событий!
 	{
-		throw(-1);
+        this->_batches.insert(this->_batches.end(), container.begin(), container.end());
+        return;
 	}
-	*/
-    for (auto n:container)
+    unsigned int n = 0;
+    auto btc_pos = this->_batches.begin();
+    while (n != pos && !this->_batches.empty())
     {
-        this->insert_batch(n,pos++);
+        btc_pos++;
+        n++;
     }
+    this->_batches.insert(btc_pos, container.begin(), container.end());
+
 }
 
 void Machine::replace_queue(std::deque<Batch *> &container)
@@ -81,235 +138,63 @@ void Machine::replace_queue(std::deque<Batch *> &container)
     }
 }
 
-//========================		M_flow class methods	================================ класс потоковой обработки
-M_flow::M_flow()
+unsigned int Machine::push_ev()
 {
-	this->_type="flow";
+    return this->_processor->push_ev();
 }
 
-M_flow::M_flow(int ID,std::deque<Recipe> recipes, bool state, unsigned int time,std::list<Batch*> batches):
-        Machine(ID,recipes, state,time, batches)
+void Machine::execute(std::ostream* log)
 {
-    this->_type="flow";
+    this->_processor->execute(log);
 }
 
-M_flow::M_flow(const M_flow &p):Machine(p)
+void to_json(json& j, const Machine& mch)
 {
-	this->_type="flow";
+    //std::deque <int> batch_IDs;
+
+    //for (auto btc : mch._batches)
+    //    batch_IDs.push_back(btc->get_ID());
+
+    //Machine(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp) :
+
+    j = json{
+        {"Machine_ID", mch._ID},
+        {"Machine_recipes", mch._recipes},
+        {"Machine_time", mch._time},
+        {"Machine_ProcessingType", mch._processor->get_type()},
+        {"Machine_count", mch._processor->get_count()}
+        //{"Machine_state", mch._state},
+        //{"Machine_batches", batch_IDs},
+        //{"Machine_last_resipe", mch._last_resipe}
+    };
 }
 
-M_flow::~M_flow() = default;
-
-
-//Метод выполняет рассчёт события в очереди
-unsigned int M_flow::push_ev()
+void from_json(const json& j, Machine& mch)
 {
-    if (!_batches.empty())
-    {
-        Batch *it=_batches.front();
-        Recipe &rcp = it->get_first();
-        if(std::any_of(_recipes.begin(),_recipes.end(),[rcp](Recipe const r){return rcp==r;}))
-        //проверка рецептов
+    //(int ID, ProcessingType type, std::deque<Recipe> recipes, unsigned int time, unsigned int count, bool state, std::list<Batch*> batches, Recipe l_rcp)
+        j.at("Machine_ID").get_to(mch._ID),
+        j.at("Machine_recipes").get_to(mch._recipes),
+        j.at("Machine_time").get_to(mch._time);
+
+        switch (j.at("Machine_ProcessingType").get<ProcessingType>())
         {
-            return  ((this->_last_resipe==it->get_first())?
-            rcp.get_time()*it->get_count():rcp.get_time()*it->get_count()+this->_time ); //OK
+        case ProcessingType::FLOW:
+            mch._processor = new Flow_Processing(mch);
+            break;
+
+        case ProcessingType::GROUP:
+            mch._processor = new Group_Processing(mch, j.at("Machine_count").get<unsigned int>());
+            break;
+
+        case ProcessingType::STACK:
+            mch._processor = new Stack_Processing(mch, j.at("Machine_count").get<unsigned int>());
+            break;
         }
-        else throw (it);//ошибка в очереди партия с неверным рецептом
-    }
-    else
-    {
-        Batch *ptr= nullptr;
-        throw (ptr) ; //очередь пуста
-    }
- }
-
-void M_flow::execute(std::ostream *log)//выполнение события
-{
-
-    Batch* bt_ptr=this->_batches.front();
-    if (this->_last_resipe!=bt_ptr->get_first())
-    {
-        *log<<"Change_recipe\tMachine_ID: "<< this->_ID<<"\ttime: "<< this->_time<<'\n';
-        _last_resipe=bt_ptr->get_first();
-        //вставить вывод в лог
-    }
-    *log<<"Execute_batch\tMachine_ID: "<< this->_ID<<"\tBatch_ID: "<<bt_ptr->get_first().get_ID();
-    bt_ptr->execute();
-    this->_batches.pop_front();
 }
-
-
-
-
-//========================		M_group class methods	================================
-
-
-M_group::M_group() :
-	Machine()
-{
-	_type = "Group";
-}
-
-
-M_group::M_group(int ID, std::deque<Recipe> recipes, bool state, unsigned int time, unsigned int count, std::list<Batch*> batches) :
-	Machine(ID, recipes, state, time, batches),_count(count)
-{
-	_type = "Group";
-}
-
-
-M_group::M_group(const M_group &p) :
-	Machine(p)
-{
-	_type = p._type;
-	_count = p._count;
-}
-
-
-unsigned int M_group::push_ev()
-{	
-
-	//		Check if queue is empty
-	if (!this->_batches.empty())
-	{
-		Batch *firstBatchPtr = this->_batches.front();
-		
-		Recipe &firstBatchRecipeRef = firstBatchPtr->get_first();
-
-		if (std::any_of(_recipes.begin(), _recipes.end(), [firstBatchRecipeRef](Recipe const r) {return firstBatchRecipeRef == r; }))
-			//проверка рецептов
-		{
-			return  ((this->_last_resipe == firstBatchPtr->get_first()) ?
-
-				firstBatchRecipeRef.get_time() :
-
-				firstBatchRecipeRef.get_time() + this->_time); //OK
-		}
-		else throw (firstBatchPtr);//ошибка в очереди партия с неверным рецептом
-
-	}
-	else
-	{
-
-		//		null pointer exception
-		Batch *ptr = nullptr;
-
-		throw (ptr);
-	}
-}
-
-
-
-void M_group::execute(std::ostream *log)
-{
-	//		Check if the recipe need to be changed, and change it if requireed
-	Batch* btcPtr = this->_batches.front();
-	if (this->_last_resipe != btcPtr->get_first())
-	{
-		this->_last_resipe = btcPtr->get_first();
-		*log << "Change_recipe\tMachine_ID: " << this->_ID << "\ttime: " << this->_time << '\n';
-
-	}
-
-	//		Contains the amount of Batch with the same recipes in queue
-	int tmpCntr = 0;
-
-	//		Count the group of Batchs with the same recipe from queue, and call Batch.execute() for each of them 
-	for (auto iter = this->_batches.begin(); iter!= this->_batches.end(); iter++)
-	{
-	    if ((*iter)->get_first() != this->_last_resipe || tmpCntr==this->_count) break;
-		(*iter)->execute();
-
-		*log << "Execute_batch\tMachine_ID: " << this->_ID << "\tBatch_ID: " << (*iter)->get_ID() << "\n";
-
-		tmpCntr++;
-
-	}	
-
-	//		Drop n = tmpCntr Batches from queue
-	for (int i = 0; i < tmpCntr; i++)
-	{
-		this->_batches.pop_front();
-	}
-}
-
-M_group::~M_group()
-{
-
-}
-
-
-//========================		M_stack class methods	================================
-
-M_stack::M_stack():
-	Machine()
-{
-	this->_type = "stack";
-}
-
-
-M_stack::M_stack(int ID, std::deque<Recipe> recipes, bool state, unsigned int time, unsigned int count, std::list<Batch*> batches) :
-	Machine(ID, recipes, state, time, batches), _count(count)
-{
-	this->_type = "stack";
-}
-
-
-M_stack::M_stack(const M_stack &p):
-	Machine(p), _count(p._count)
-{
-	this->_type = "stack";
-}
-
-
-unsigned int M_stack::push_ev()
-{
-	if (!_batches.empty())
-	{
-		Batch *it = _batches.front();
-		Recipe &rcp = it->get_first();
-		if (std::any_of(_recipes.begin(), _recipes.end(), [rcp](Recipe const r) {return rcp == r; }))
-			//проверка рецептов
-		{
-			return  ((this->_last_resipe == it->get_first()) ?
-				rcp.get_time()*(int(it->get_count() / this->_count) + 1) :
-				rcp.get_time()*(int(it->get_count() / this->_count)+ 1 ) + this->_time); //OK
-		}
-		else throw (it);//ошибка в очереди партия с неверным рецептом
-	}
-	else
-	{
-		Batch *ptr = nullptr;
-		throw (ptr); //очередь пуста
-	}
-}
-
-
-void M_stack::execute(std::ostream *log)
-{
-	Batch* bt_ptr = this->_batches.front();
-	if (this->_last_resipe != bt_ptr->get_first())
-	{
-		*log << "Change_recipe\tMachine_ID: " << this->_ID << "\ttime: " << this->_time << '\n';
-		_last_resipe = bt_ptr->get_first();
-		//вставить вывод в лог
-	}
-	*log << "Execute_batch\tMachine_ID: " << this->_ID << "\tBatch_ID: " << bt_ptr->get_ID();
-	bt_ptr->execute();
-	this->_batches.pop_front();
-}
-
-
-
-M_stack::~M_stack()
-{
-
-}
-
 
 std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка оператора сдвига для вывода
 {
-    os<<"TYPE: "<<p._type;
+    //os<<"TYPE: "<<p._type;
     os<<"\tID: "<<p._ID;
     os<<"\tSTATE: "<<p._state;
     os<<"\tTIME "<<p._time;
@@ -322,6 +207,25 @@ std::ostream &operator<<(std::ostream & os, Machine &p)//перегрузка о
     return os;
 }
 
+
+//
+//void to_json(json& j, const Machine& mch)
+//{
+//    std::deque <int> batch_IDs;
+//
+//    for (auto btc : mch._batches)
+//        batch_IDs.push_back(btc->get_ID());
+//
+//    j = json{
+//        {"Machine_type", mch._type},
+//        {"Machine_ID", mch._ID},
+//        {"Machine_state", mch._state},
+//        {"Machine_time", mch._time},
+//        {"Machine_recipes", mch._recipes},
+//        {"Machine_batches", batch_IDs},
+//        {"Machine_last_resipe", mch._last_resipe}
+//    };
+//}
 
 
 

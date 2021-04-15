@@ -5,390 +5,68 @@
 #include "pch.h"// pch.h: This is a precompiled header file.
 #include "Environment.h"
 
-void Environment::read_ev(std::istream &is)
-{
-    unsigned int mch_ID;
-    is>> mch_ID;
-    auto it_mch =
-            std::find_if(this->_machines.begin(), this->_machines.end(),
-                    [ mch_ID](Machine *mch){ return mch_ID==mch->get_ID();});
-    unsigned int time;
-    is>>time;
-    this->_events.emplace_back(**it_mch,time);
-}
-
-void Environment::read_env(std::istream& is)
-{
-    std::string buf_string = "";
-    is >> buf_string;
-    if (buf_string != "ENVIRONMENT:")
-    {
-        *this->_messages << "CONFIG FILE IS CORRUPTED!\n";
-        throw - 1;
-    }
-    is >> this->_name;
-    is >> buf_string;
-    if (buf_string != "MACHINES:")
-    {
-        *this->_messages << "CONFIG FILE IS CORRUPTED!\n";
-        throw(-1);
-    }
-    is.get();// \n
-    while (is >> buf_string && buf_string == "TYPE:")//читаем машины
-    {
-        is >> buf_string;
-        Machine* ptr;
-        if (buf_string == "flow")
-        {
-            int ID = 0;
-            bool state = 1;
-            int time = 0;
-            std::deque <Recipe> recipes{};
-            is >> buf_string;
-            is >> ID;
-            is >> buf_string;
-            is >> state;
-            is >> buf_string;
-            is >> time;
-            is >> buf_string;
-            if (buf_string != "RECIPES:")
-            {
-                *this->_messages << "CONFIG FILE IS CORRUPTED!\n";
-            }
-            this->read_recipes(is, recipes);
-            ptr = new M_flow(ID, recipes, state, time);
-        }
-        else if (buf_string == "stack")
-        {
-            int ID = 0;
-            bool state = 1;
-            int time = 0;
-            int count = 0;
-            std::deque <Recipe> recipes{};
-            is >> buf_string;
-            is >> ID;
-            is >> buf_string;
-            is >> state;
-            is >> buf_string;
-            is >> time;
-            is >> buf_string;
-            is >> count;
-            is >> buf_string;
-            if (buf_string != "RECIPES:")
-            {
-                *this->_messages << "CONFIG FILE IS CORRUPTED!\n";
-            }
-            this->read_recipes(is, recipes);
-            ptr = new M_stack(ID, recipes, state, time, count);
-        }
-        else if (buf_string == "group")
-        {
-            int ID = 0;
-            bool state = 1;
-            int time = 0;
-            int count = 0;
-            std::deque <Recipe> recipes{};
-            is >> buf_string;
-            is >> ID;
-            is >> buf_string;
-            is >> state;
-            is >> buf_string;
-            is >> time;
-            is >> buf_string;
-            is >> count;
-            is >> buf_string;
-            if (buf_string != "RECIPES:")
-            {
-                *this->_messages << "CONFIG FILE IS CORRUPTED!\n";
-            }
-            this->read_recipes(is, recipes);
-            ptr = new M_group(ID, recipes, state, time, count);
-        }
-        this->_machines.push_back(ptr);
-    }
-}
-
-
-void Environment::read_recipes(std::istream &is, std::deque <Recipe> &container)
-{
-    std::string buf_string="";
-    while (is.peek()!='\n')//читаем рецепты машины
-    {
-        int rcp_ID=0;
-        int rcp_time=0;
-        is>>buf_string;
-        is>>rcp_ID;
-        is>>buf_string;
-        is>>rcp_time;
-        container.emplace_back(rcp_ID,rcp_time);
-    }
-}
-
-void Environment::read_state(std::istream &is)
-{
-    std::string buf_string="";
-    if (is>>buf_string && buf_string!="BATCHES:")
-    {
-        *this->_messages<<"STATE FILE IS CORRUPTED!\n";
-        throw -1;
-    }
-    while (is>>buf_string && buf_string=="ID:")//читаем партии
-    {
-        int ID=0;
-        int count=0;
-        std::deque <Recipe> recipes{};
-        is>>ID;
-        is>>buf_string;
-        is>>count;
-        is>>buf_string;
-        if (buf_string!="RECIPES:")
-        {
-            *this->_messages<<"STATE FILE IS CORRUPTED!\n";
-            throw -1;
-        }
-        this->read_recipes(is,recipes);
-        this->_batches.emplace_back(ID,count,recipes);
-    }
-    //is>>buf_string;
-    if (buf_string=="QUEUES:")
-    {
-        while (is>>buf_string && buf_string=="ID:")
-        {
-            unsigned int mch_ID=0;
-            is>>mch_ID;
-            Machine *mch_ptr=this->search_machine(mch_ID);
-            std::deque <Batch*> queue{};
-            is>>buf_string;
-            while (is.peek()!='\n')
-            {
-                is>>buf_string;
-                unsigned int btc_ID=0;
-                is>>btc_ID;
-                Batch *btc_ptr=this->search_batch(btc_ID);
-                queue.push_back(btc_ptr);
-            }
-            mch_ptr->insert_batch(queue); //Строка пробрасывает искл
-        }
-    }
-}
-
-std::istream & operator>> (std::istream & is, Environment & p)//чтение из файла конфигурации
-{
-    std::string buf_string="";
-    is>>buf_string;
-    if (buf_string!="ENVIRONMENT:")
-    {
-        *p._messages<<"CONFIG FILE IS CORRUPTED!\n";
-        throw -1;
-    }
-    is>>p._name;
-    is>>buf_string;
-    if (buf_string!="MACHINES:")
-    {
-        *p._messages<<"CONFIG FILE IS CORRUPTED!\n";
-        throw(-1);
-    }
-    is.get();// \n
-    while (is>>buf_string && buf_string=="TYPE:")//читаем машины
-    {
-        is>>buf_string;
-        Machine *ptr;
-        if (buf_string=="flow")
-        {
-            int ID=0;
-            bool state=1;
-            int time=0;
-            std::deque <Recipe> recipes{};
-            is>>buf_string;
-            is>>ID;
-            is>>buf_string;
-            is>>state;
-            is>>buf_string;
-            is>>time;
-            is>>buf_string;
-            if (buf_string!="RECIPES:")
-            {
-                *p._messages<<"CONFIG FILE IS CORRUPTED!\n";
-                return is;
-            }
-            p.read_recipes(is,recipes);
-            ptr = new M_flow(ID,recipes,state,time);
-        }
-        else if (buf_string=="stack")
-        {
-            int ID=0;
-            bool state=1;
-            int time=0;
-            int count=0;
-            std::deque <Recipe> recipes{};
-            is>>buf_string;
-            is>>ID;
-            is>>buf_string;
-            is>>state;
-            is>>buf_string;
-            is>>time;
-            is>>buf_string;
-            is>>count;
-            is>>buf_string;
-            if (buf_string!="RECIPES:")
-            {
-                *p._messages<<"CONFIG FILE IS CORRUPTED!\n";
-                return is;
-            }
-            p.read_recipes(is,recipes);
-            ptr = new M_stack(ID,recipes,state,time,count);
-        }
-        else if (buf_string=="group")
-        {
-            int ID=0;
-            bool state=1;
-            int time=0;
-            int count=0;
-            std::deque <Recipe> recipes{};
-            is>>buf_string;
-            is>>ID;
-            is>>buf_string;
-            is>>state;
-            is>>buf_string;
-            is>>time;
-            is>>buf_string;
-            is>>count;
-            is>>buf_string;
-            if (buf_string!="RECIPES:")
-            {
-                *p._messages<<"CONFIG FILE IS CORRUPTED!\n";
-                return is;
-            }
-            p.read_recipes(is,recipes);
-            ptr = new M_group(ID,recipes,state,time,count);
-        }
-        p._machines.push_back(ptr);
-    }
-    return is;
-}
-
-std::ostream &operator<<(std::ostream &os, Environment &p)
-{
-    os<<"ENVIRONMENT:\t"<<p._name<<'\n';
-   os<<"BATCHES:\n";
-    for (Batch n:p._batches) os<<n<<'\n';
-   os<<"MACHINES:\n";
-   for (auto n:p._machines) os<<*n<<'\n';
-   os<<'\n';
-
-
-    return os;
-}
-
-
-
-Environment::Environment()
-{
-    _global_model_time=0;
-}
-
-Environment::Environment(const std::string& configfile, const std::string& state_file, const std::string& logfile, const std::string& messages, unsigned int itial_time)
-{
-    std::ifstream config(configfile);
-
-    if (!config.is_open())
-    {
-        std::cout << "Config file not found";
-        //return;
-    }
-
-    std::ifstream state(state_file);
-
-    if (state.rdstate() == std::ios_base::failbit)
-    {
-        std::cout << "State file not found";
-    }
-
-    if (!state.is_open())
-    {
-        std::cout << "State file not found";
-        //return;
-    }
-
-    std::ofstream log(logfile);//, std::ios::binary);
-
-
-    if (!log.is_open())
-    {
-        std::cout << "Log file not found";
-        //return;
-    }
-
-    if (log.rdstate() == std::ios_base::failbit)
-    {
-        std::cout << "State file not found";
-    }
-
-    //Environment(config, state, log, std::cout,0);
-    this->_config_file = &config;
-    this->_is_state_file = &state;
-    this->_log_file = &log;
-    this->_messages = &std::cout;
-    this->_global_model_time = 0;
-
-    this->read_env(*_config_file);
-    this->read_state(*_is_state_file);
-    this->make_events();
-}
-
-Environment::Environment(std::istream &is_conf, std::ostream &os_log, std::ostream &os_mes, unsigned int time):
-                        _config_file(&is_conf),_log_file(&os_log),_messages(&os_mes),_global_model_time(time)
-{
-    *_config_file>>*this;
-}
-
-Environment::Environment(std::istream &is_conf, std::istream &is_state, std::ostream &os_log,
-                         std::ostream &os_mes, unsigned int time):_config_file(&is_conf),_is_state_file(&is_state)
-                         ,_log_file(&os_log),_messages(&os_mes),_global_model_time(time)
-{
-    *_config_file>>*this;
-    this->read_state(*_is_state_file);
-    this->make_events();
-}
-
-Environment::~Environment()
+Environment::Environment(std::string name, std::map<unsigned int, Batch>& batches, std::map<unsigned int, Machine>& machines, 
+    std::deque<Event>& events, unsigned int global_model_time):
+    _name(name), _batches(batches), _machines(machines), _events(events), _global_model_time(global_model_time)
 {
 }
 
-Batch *Environment::search_batch(unsigned int btc_ID)
+Environment::Environment(std::string name, std::list<Batch>& batches, std::list<Machine>& machines, std::deque<Event>& events, unsigned int global_model_time):
+    _name(name), _batches(*new std::map<unsigned int, Batch>{}), _machines(*new std::map<unsigned int, Machine>{}), _events(events), _global_model_time(global_model_time)
 {
-    auto n=this->_batches.begin();
-    while (n->get_ID()!=btc_ID)
+    for (auto batch : batches)
     {
-        n++;
+        _batches.insert(std::pair<unsigned int, Batch>(batch.get_ID(), batch));
     }
-    return &*n;
+    
+    for (auto machine : machines)
+    {
+        _machines.insert(std::pair<unsigned int, Machine>(machine.get_ID(), machine));
+    }
 }
 
-Machine *Environment::search_machine(unsigned int mch_ID)
+Environment::Environment(const Environment& env):
+    _name(env._name), _batches(env._batches), _machines(env._machines), _events(env._events), _global_model_time(env._global_model_time)
 {
-    auto n=this->_machines.begin();
-    Machine *ptr=*n;
-    while (ptr->get_ID()!=mch_ID)
-    {
-        n++;
-        ptr=*n;
-    }
-    return ptr;
 }
 
-std::deque<Event>::iterator Environment::search_event(Machine *ptr)
+Environment::Environment():
+    _batches(*new std::map<unsigned int, Batch>{}), _machines(*new std::map<unsigned int, Machine>{}), _events(*new std::deque <Event>{})
+{}
+
+Batch& Environment::search_batch(unsigned int btc_ID)
+{
+
+    return this->_batches[btc_ID];
+}
+
+Machine& Environment::search_machine(unsigned int mch_ID)
+{
+    return this->_machines[mch_ID];
+}
+
+std::deque<Event>::iterator Environment::search_event(Machine& ptr)
 {
     auto it=this->_events.begin();
-    while (it->get_ptr()!=ptr) it++;
+    while (it->get_ptr()!=&ptr) it++;
     return it;
 }
 
-void Environment::change_event(Machine *mch)
+void Environment::add_batch(json j)
+{
+    this->_batches.insert(std::pair<int, Batch>(j.at("Batch_ID").get<unsigned int>(), Batch(j.get<Batch>())));
+}
+
+void Environment::add_machine(json j)
+{
+    this->_machines.insert(std::pair<int, Machine>(j.at("Machine_ID").get<unsigned int>(), Machine(j.get<Machine>())));
+}
+
+void Environment::change_event(Machine& mch)
 {
     auto ev_it=this->search_event(mch);
     this->_events.erase(ev_it);
-    this->push_event(*mch);
+    this->push_event(mch);
 }
 
 void Environment::push_event(Machine &mch)
@@ -427,15 +105,15 @@ void Environment::push_event(Machine &mch)
 //метод рассчёта событий
 void Environment::make_events()
 {
-    for(auto mch:this->_machines)
+    for(auto pair : this->_machines)
     {
         try
         {
-            this->push_event(*mch);
+            this->push_event(pair.second);
         }
         catch (int)
         {
-            *this->_log_file<<"Modelling stopped!\n";
+            *this->_messages<<"Modelling stopped!\n";
         }
     }
 
@@ -458,7 +136,7 @@ void Environment::do_step(unsigned int n)
         for (int i = 0; i < n; ++i)
         {
             auto ev_it = this->_events.begin();
-            *this->_log_file << "MODEL_TIME: " << this->_global_model_time << '\n';
+            *this->_messages << "MODEL_TIME: " << this->_global_model_time << '\n';
             if (this->_events.empty()) throw (i);
             this->_global_model_time += ev_it->get_time();
             auto ev_it_f = ev_it;
@@ -467,7 +145,7 @@ void Environment::do_step(unsigned int n)
             {
                 ev_it_f->time_shift(ev_it->get_time());
             }
-            ev_it->execute(this->_log_file);
+            ev_it->execute(this->_messages);
             Machine * m_ptr=ev_it->get_ptr();
             ev_it++;
             this->_events.pop_front();
@@ -503,13 +181,13 @@ void Environment::do_step()
     }
 }
 
-void Environment::add_batch(unsigned int btc_ID, unsigned int mch_ID, unsigned int pos)
+void Environment::q_add_batch(unsigned int btc_ID, unsigned int mch_ID, unsigned int pos)
 {
-    Batch* btc=search_batch(btc_ID);
-    Machine* mch=search_machine(mch_ID);
-    bool push_event = mch->check_queue();//проверка на пустую очередь
-    mch->insert_batch(btc, pos);
-    if (push_event) this->push_event(*mch);
+    Batch& btc=search_batch(btc_ID);
+    Machine& mch=search_machine(mch_ID);
+    bool push_event = mch.check_queue();//проверка на пустую очередь
+    mch.insert_batch(&btc, pos);
+    if (push_event) this->push_event(mch);
     if(push_event==0 && pos==0)//необходимо поменять event
     {
         this->change_event(mch);
@@ -518,18 +196,18 @@ void Environment::add_batch(unsigned int btc_ID, unsigned int mch_ID, unsigned i
     *this->_messages<<"Batch added:\nBatch:\t"<<btc_ID<<"\tMachine:\t"<<mch_ID<<'\n';
 }
 
-void Environment::add_batch(std::vector<unsigned int> btc_IDs, unsigned int mch_ID, unsigned int pos)
+void Environment::q_add_batch(std::vector<unsigned int> btc_IDs, unsigned int mch_ID, unsigned int pos)
 {
-    Machine* mch = this->search_machine(mch_ID);
-    bool push_event = mch->check_queue();//проверка на пустую очередь
+    Machine& mch = this->search_machine(mch_ID);
+    bool push_event = mch.check_queue();//проверка на пустую очередь
     std::deque <Batch*> batches ={};
     for (auto n:btc_IDs)
     {
-        Batch* btc =this->search_batch(n);
+        Batch* btc =&this->search_batch(n);
         batches.push_back(btc);
     }
-    mch->insert_batch(batches,pos);
-    if (push_event) this->push_event(*mch);
+    mch.insert_batch(batches,pos);
+    if (push_event) this->push_event(mch);
     if(push_event==0 && pos==0)//необходимо поменять event
     {
         this->change_event(mch);
@@ -543,16 +221,16 @@ void Environment::add_batch(std::vector<unsigned int> btc_IDs, unsigned int mch_
 
 void Environment::replace_queue(std::vector<unsigned int> btc_IDs, unsigned int mch_ID)
 {
-    Machine* mch = this->search_machine(mch_ID);
-    bool push_event = mch->check_queue();//проверка на пустую очередь
+    Machine& mch = this->search_machine(mch_ID);
+    bool push_event = mch.check_queue();//проверка на пустую очередь
     std::deque <Batch*> batches ={};
     for (auto n:btc_IDs)
     {
-        Batch* btc =this->search_batch(n);
+        Batch* btc =&this->search_batch(n);
         batches.push_back(btc);
     }
-    mch->replace_queue(batches);
-    if (push_event) this->push_event(*mch);
+    mch.replace_queue(batches);
+    if (push_event) this->push_event(mch);
     else this->change_event(mch);
     //выводим сообщение
     *this->_messages<<"Queue replaced:\nBatches:\t";
@@ -561,8 +239,84 @@ void Environment::replace_queue(std::vector<unsigned int> btc_IDs, unsigned int 
     *this->_messages<<"\tMachine:\t"<<mch_ID<<'\n';
 }
 
+void Environment::do_step_till_machine(unsigned int mch_ID)
+{
+    Machine* m_ptr = &this->search_machine(mch_ID);
+    while (this->_events.front().get_ptr() != m_ptr)
+    {
+        this->do_step(1);
+    }
+}
+
+void Environment::time_shift(unsigned int time)
+{
+    while (this->_events.front().get_time() < time)
+    {
+        time -= this->_events.front().get_time();
+        this->do_step(1);
+    }
+    for (auto n : this->_events)
+    {
+        n.time_shift(time);
+    }
+    this->_global_model_time += time;
+
+    if (DEBUG) std::cout << this->_global_model_time << '\n';
+}
+
+
+void to_json(json& j, const Environment& env)
+{
+    std::list <Batch>& bt_list = *new std::list <Batch>;
+    std::list <Machine>& mch_list = *new std::list <Machine>;
+
+    for (auto batch : env._batches)
+        bt_list.push_back(batch.second);
+    for (auto mch : env._machines)
+        mch_list.push_back(mch.second);
+
+    j = json{
+        {"Environment_name", env._name},
+        {"Environment_batches", bt_list},
+        {"Environment_machines", mch_list}
+    };
+}
+
+void from_json(const json& j, Environment& env)
+{
+    //std::string name, std::map<unsigned int, Batch>& batches, std::map<unsigned int, Machine>& machines,
+    //    std::deque<Event>& events, unsigned int global_model_time
+    //std::list <Batch> bt_list = j.at("Environment_batches").get<std::list<Batch>>();
+    //std::list <Machine> mch_list = j.at("Environment_machines").get<std::list<Machine>>();
+    //env = Environment(
+    //    j.at("Environment_name").get<std::string>(),
+    //    bt_list,
+    //    mch_list);
+    j.at("Environment_name").get_to(env._name);
+    for (auto batch : j.at("Environment_batches").get<std::list<Batch>>())
+    {
+        env._batches.insert(std::pair<unsigned int, Batch>(batch.get_ID(), batch));
+    }
+
+    for (auto machine : j.at("Environment_machines").get<std::list<Machine>>())
+    {
+        env._machines.insert(std::pair<unsigned int, Machine>(machine.get_ID(), machine));
+    }
+}
+
+Environment& Environment::operator=(const Environment& env)
+{
+    this->_name = env._name;
+    this->_batches = env._batches;
+    this->_machines = env._machines;
+    this->_events = env._events;
+    this->_global_model_time = env._global_model_time;
+
+    return *this;
+}
 
 #if DEBUG
+
 //отладочный метод для просмотра среды
 void Environment::print_env()
 {
@@ -592,31 +346,6 @@ void Environment::print_env()
 }
 #endif
 
-
-void Environment::do_step_till_machine(unsigned int mch_ID)
-{
-    Machine *m_ptr=this->search_machine(mch_ID);
-    while (this->_events.front().get_ptr()!=m_ptr)
-    {
-        this->do_step(1);
-    }
-}
-
-void Environment::time_shift(unsigned int time)
-{
-    while (this->_events.front().get_time()<time)
-    {
-        time-=this->_events.front().get_time();
-        this->do_step(1);
-    }
-    for (auto n:this->_events)
-    {
-        n.time_shift(time);
-    }
-    this->_global_model_time+=time;
-
-    if (DEBUG) std::cout<<this->_global_model_time<<'\n';
-}
 
 
 

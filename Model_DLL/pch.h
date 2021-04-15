@@ -19,7 +19,12 @@
 #include <sstream>
 #include <functional>
 #include <fstream>
+#include <map>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#define PCH true
 #define DEBUG false
 
 #endif //PCH_H
