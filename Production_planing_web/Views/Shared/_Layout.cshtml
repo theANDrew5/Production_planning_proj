@@ -9,24 +9,33 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        @if (IsSectionDefined("Header"))
+        {
+            @RenderSection("Header")
+        }
+        else
+        {
+            <!--Navbar-->
+            <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+                <!--Brand link-->
+                <a class="navbar-brand" asp-area="" asp-controller="Api" asp-action="About">Production planning</a>
+                <!--Collapsible button-->
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <!--Links-->
+                <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Api" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Api" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Api" asp-action="Model">Model configurator</a>
+                            <a class="nav-link" asp-area="" asp-controller="Api" asp-action="Model">Model configurator</a>
                         </li>
                     </ul>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        }
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -39,7 +48,7 @@
             &copy; 2021 - Production_planing_web - <a asp-area="" asp-controller="Api" asp-action="About">About</a>
         </div>
     </footer>
-    
+
     @*ок какойто скрипт чтобы всё работало*@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
